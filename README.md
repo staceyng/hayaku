@@ -1,0 +1,2 @@
+# hayaku
+Rapidfire quiz game
