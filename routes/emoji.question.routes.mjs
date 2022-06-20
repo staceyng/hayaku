@@ -7,6 +7,6 @@ const router = Router();
 
 const emojiQnController = new EmojiQuestionController(db);
 
-router.get("/question/:id", emojiQnController.getEmojiQuestion);
+router.get("/questions/:id", emojiQnController.getEmojiQuestion);
 
 export default router;

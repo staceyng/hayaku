@@ -23,19 +23,41 @@ module.exports = {
       },
     });
 
-    await queryInterface.createTable("games", {
-      id: {
+    await queryInterface.createTable("users", {
+      email: {
         allowNull: false,
         primaryKey: true,
         type: Sequelize.STRING,
       },
-      created_by: {
+      id: {
+        allowNull: false,
+        type: Sequelize.STRING,
+        unique: true,
+      },
+      name: {
         allowNull: false,
         type: Sequelize.STRING,
       },
-      number_of_players: {
+      password: {
         allowNull: false,
+        type: Sequelize.STRING,
+      },
+    });
+
+    await queryInterface.createTable("games", {
+      id: {
+        allowNull: false,
+        autoIncrement: true,
+        primaryKey: true,
         type: Sequelize.INTEGER,
+      },
+      user_id: {
+        // allowNull: false,
+        type: Sequelize.STRING,
+        references: {
+          model: "users",
+          key: "id",
+        },
       },
       number_of_questions: {
         allowNull: false,
@@ -45,11 +67,15 @@ module.exports = {
         allowNull: false,
         type: Sequelize.INTEGER,
       },
+      score: {
+        allowNull: false,
+        type: Sequelize.INTEGER,
+      },
       state: {
         allowNull: false,
         type: Sequelize.STRING,
       },
-      player_scores: {
+      history: {
         allowNull: false,
         type: Sequelize.JSON,
       },
@@ -69,5 +95,6 @@ module.exports = {
   async down(queryInterface, Sequelize) {
     await queryInterface.dropTable("emoji_questions");
     await queryInterface.dropTable("games");
+    await queryInterface.dropTable("users");
   },
 };

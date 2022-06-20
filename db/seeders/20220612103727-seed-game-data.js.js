@@ -1,4 +1,10 @@
-"use strict";
+const jsSHA = require("jssha");
+const salt = process.env.SALT;
+
+const shaObj = new jsSHA("SHA-512", "TEXT", { encoding: "UTF8" });
+const pw = `${salt}-password`;
+shaObj.update(pw);
+const hash = shaObj.getHash("HEX");
 
 const questions = [
   {
@@ -106,6 +112,14 @@ const questions = [
 module.exports = {
   async up(queryInterface, Sequelize) {
     await queryInterface.bulkInsert("emoji_questions", questions, {});
+    await queryInterface.bulkInsert("users", [
+      {
+        email: "cheatcodes@gmail.com",
+        id: "QRN5QT",
+        name: "CheatCodes",
+        password: "password",
+      },
+    ]);
   },
 
   async down(queryInterface, Sequelize) {

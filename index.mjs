@@ -3,6 +3,8 @@ import path from "path";
 import dotenv from "dotenv";
 
 import EmojiQnRouter from "./routes/emoji.question.routes.mjs";
+import GameRouter from "./routes/game.routes.mjs";
+import UserRouter from "./routes/user.routes.mjs";
 
 const envFilePath = ".env";
 dotenv.config({ path: path.normalize(envFilePath) });
@@ -15,7 +17,7 @@ app.use(express.urlencoded({ extended: false }));
 app.use(express.json());
 app.set("view engine", "ejs");
 
-const routers = [EmojiQnRouter];
+const routers = [EmojiQnRouter, GameRouter, UserRouter];
 routers.forEach((router) => app.use("/", router));
 
 app.listen(PORT);

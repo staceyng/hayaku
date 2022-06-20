@@ -5,24 +5,26 @@ class GameController {
 
   postNewGame = async (request, response) => {
     try {
+      // body to contain user_id
       const payload = request.body;
-      const playerName = payload.name;
+      console.log(payload);
+      const userId = payload.user_id;
       const body = {
-        id: createNewGameID(),
-        createdBy: playerName,
-        numberOfPlayers: 2,
-        numberOfQuestions: 3,
+        userId: userId,
+        numberOfQuestions: 1,
         currentQuestion: 1,
-        state: "WAITING_TO_START",
-        playerScores: JSON.stringify({ playerName: 0 }),
+        score: 0,
+        state: "IN_PROGRESS",
+        history: JSON.stringify({
+          history: [],
+        }), // keep track of current question (int), current score (int)
       };
 
       // write to db
-      result = await this.db.create(body);
+      const result = await this.db.Game.create(body);
       console.log("postNewGame result: ", result);
       console.log("postNewGame result id: ", result.id);
-
-      response.send(result);
+      response.send(`Successfully created new game with id: ${result.id}`);
     } catch (err) {
       console.error(err);
     }
@@ -30,22 +32,58 @@ class GameController {
 
   putUpdateGame = async (request, response) => {
     try {
-      const payload = request.body;
-      const playerName = payload.name;
-      const body = {
-        id: this.createNewGameID(),
-        createdBy: payload.name,
-        numberOfPlayers: 1,
-        numberOfQuestions: 3,
-        currentQuestion: 1,
-        state: "WAITING_TO_START",
-        playerScores: JSON.stringify({ playerName: 0 }),
+      const updates = request.body; // update body to contain current_question, score (for current question),
+      console.log(updates);
+      const gameId = request.params.id;
+      let updatedState;
+      // 1. get current game
+      const game = await this.db.Game.findOne({ where: { id: gameId } });
+      console.log("game: ", game);
+      console.log("gameHistory: ", game.history);
+
+      // 2. compare current game state with updates
+      // 2.1. Do no update game if game state is ended fail with not allowed
+      if (game.state === "ENDED") {
+        response
+          .status(400)
+          .send(
+            `game with id:${gameId} has already ended, unable to perform update`
+          );
+      }
+      // 2.2. update current game state
+      if (updates.current_question !== game.currentQuestion) {
+        updatedState =
+          updates.current_question <= game.numberOfQuestions
+            ? "IN_PROGRESS"
+            : "ENDED";
+      }
+
+      // 2.3 update game history
+      let currentHistory = JSON.parse(game.history);
+      console.log("currentHistory: ", currentHistory);
+      currentHistory = currentHistory["history"];
+      const historyCopy = [...currentHistory];
+      console.log("currentHistory.history: ", historyCopy);
+      const newEntry = {
+        question: game.currentQuestion,
+        score: updates.score,
+      };
+      historyCopy.push(newEntry);
+      console.log("newHistory: ", historyCopy);
+
+      const updateBody = {
+        currentQuestion: updates.current_question,
+        state: updatedState,
+        score: parseInt(game.score) + parseInt(updates.score),
+        history: JSON.stringify({ history: historyCopy }),
       };
 
-      // write to db
-      result = await this.db.create(body);
-      console.log("postNewGame result: ", result);
-      console.log("postNewGame result id: ", result.id);
+      // 3. update game
+      game.set(updateBody);
+      const result = await game.save();
+
+      console.log("update game result: ", result);
+      console.log("update game result id: ", result.id);
 
       response.send(result);
     } catch (err) {
@@ -55,15 +93,3 @@ class GameController {
 }
 
 export default GameController;
-
-createNewGameID = () => {
-  let result = "";
-  let allowedCharacters = "ABCDEFGHIJKLMNPQRSTUVWXYZ123456789";
-  const characterLength = 5;
-  for (let i = 0; i > characterLength; i += 1) {
-    result += allowedCharacters.charAt(
-      Math.floor(Math.random() * characterLength)
-    );
-  }
-  return result;
-};

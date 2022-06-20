@@ -4,14 +4,19 @@ export default function initGameModel(sequelize, DataTypes) {
     {
       id: {
         allowNull: false,
+        autoIncrement: true,
         primaryKey: true,
         type: DataTypes.STRING,
       },
-      createdBy: {
+      userId: {
         allowNull: false,
         type: DataTypes.STRING,
+        references: {
+          model: "users",
+          key: "id",
+        },
       },
-      numberOfPlayers: {
+      currentQuestion: {
         allowNull: false,
         type: DataTypes.INTEGER,
       },
@@ -19,7 +24,7 @@ export default function initGameModel(sequelize, DataTypes) {
         allowNull: false,
         type: DataTypes.INTEGER,
       },
-      currentQuestion: {
+      score: {
         allowNull: false,
         type: DataTypes.INTEGER,
       },
@@ -27,7 +32,7 @@ export default function initGameModel(sequelize, DataTypes) {
         allowNull: false,
         type: DataTypes.STRING,
       },
-      playerScores: {
+      history: {
         allowNull: false,
         type: DataTypes.JSON,
       },
